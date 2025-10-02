@@ -1,0 +1,25 @@
+# Node dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories
+.vscode/
+.idea/
+*.sw?
+
+# macOS artifacts
+.DS_Store
+
+# Angular build artifacts
+angular-app/dist/
+angular-app/.angular/
+
+# Next.js build artifacts
+next-host/.next/
+next-host/.turbo/
+next-host/out/
+next-host/.vercel/

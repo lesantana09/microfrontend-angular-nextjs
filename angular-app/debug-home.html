@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Angular Remote Debug</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+      }
+      #target {
+        margin-top: 24px;
+      }
+      button {
+        padding: 8px 16px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Angular Remote Debug</h1>
+    <p>
+      Clique em "Carregar componente" para importar o container exposto em
+      <code>http://localhost:4200/remoteEntry.js</code> e renderizar o
+      <code>HomeComponent</code> standalone.
+    </p>
+    <button id="load-btn">Carregar componente</button>
+    <div id="target"></div>
+
+    <script type="module">
+      const scriptsCache = new Map();
+
+      async function loadScript(src, { optional = false } = {}) {
+        if (scriptsCache.has(src)) {
+          return scriptsCache.get(src);
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = src;
+          script.onload = resolve;
+          script.onerror = () => {
+            const error = new Error(`Falha ao carregar ${src}`);
+            if (optional) {
+              console.warn(error.message);
+              resolve();
+            } else {
+              reject(error);
+            }
+          };
+          document.head.appendChild(script);
+        });
+
+        scriptsCache.set(src, promise);
+        return promise;
+      }
+
+      async function ensureShareScope() {
+        window.__webpack_share_scopes__ = window.__webpack_share_scopes__ || {};
+        window.__webpack_share_scopes__.default =
+          window.__webpack_share_scopes__.default || {};
+      }
+
+      async function loadAngularRemote() {
+        await loadScript("http://localhost:4200/polyfills.js", {
+          optional: true,
+        });
+        await loadScript("http://localhost:4200/runtime.js", {
+          optional: true,
+        });
+        await loadScript("http://localhost:4200/remoteEntry.js");
+
+        const container = window.angularApp;
+        if (!container) {
+          throw new Error(
+            "window.angularApp não foi definido. Confirme se remoteEntry.js foi carregado."
+          );
+        }
+
+        await ensureShareScope();
+
+        if (typeof container.init === "function") {
+          await container.init(window.__webpack_share_scopes__.default);
+        }
+
+        const factory = await container.get("./HomePage");
+        return factory();
+      }
+
+      async function renderHome() {
+        const target = document.getElementById("target");
+        target.textContent = "Carregando...";
+
+        try {
+          const module = await loadAngularRemote();
+          target.textContent = "";
+
+          const mountPoint = document.createElement("div");
+          target.appendChild(mountPoint);
+
+          if (typeof module.renderHome === "function") {
+            await module.renderHome(mountPoint);
+          } else {
+            target.textContent =
+              "renderHome não está disponível no módulo exposto.";
+          }
+
+          console.log("Módulo carregado:", module);
+        } catch (error) {
+          console.error(error);
+          target.textContent = error.message;
+        }
+      }
+
+      document.getElementById("load-btn").addEventListener("click", () => {
+        renderHome();
+      });
+    </script>
+  </body>
+</html>

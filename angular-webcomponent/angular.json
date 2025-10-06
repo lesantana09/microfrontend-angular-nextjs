@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "angular-app": {
+    "angular-webcomponent": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -15,9 +15,9 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "ngx-build-plus:browser",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/angular-app",
+            "outputPath": "dist/angular-webcomponent",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -25,9 +25,7 @@
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets"],
             "styles": ["src/styles.scss"],
-            "scripts": [],
-            "extraWebpackConfig": "webpack.config.js",
-            "commonChunk": false
+            "scripts": []
           },
           "configurations": {
             "production": {
@@ -43,9 +41,7 @@
                   "maximumError": "4kb"
                 }
               ],
-              "outputHashing": "all",
-              "optimization": true,
-              "extractLicenses": true
+              "outputHashing": "all"
             },
             "development": {
               "buildOptimizer": false,
@@ -65,31 +61,27 @@
               ]
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "ngx-build-plus:dev-server",
-          "options": {
-            "port": 4200,
-            "publicHost": "http://localhost:4200",
-            "extraWebpackConfig": "webpack.config.js"
-          },
+          "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "angular-app:build:production",
-              "extraWebpackConfig": "webpack.prod.config.js"
+              "browserTarget": "angular-webcomponent:build:production"
             },
             "development": {
-              "browserTarget": "angular-app:build:development"
+              "browserTarget": "angular-webcomponent:build:development"
+            },
+            "webcomponent": {
+              "browserTarget": "angular-webcomponent:build:webcomponent"
             }
           },
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "ngx-build-plus:extract-i18n",
+          "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "angular-app:build",
-            "extraWebpackConfig": "webpack.config.js"
+            "browserTarget": "angular-webcomponent:build"
           }
         },
         "test": {
@@ -105,6 +97,5 @@
         }
       }
     }
-  },
-  "defaultProject": "angular-app"
+  }
 }
